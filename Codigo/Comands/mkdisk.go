@@ -77,17 +77,15 @@ func Command_mkdisk(tokens []string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("error al convertir tamaño a bytes: %v", err)
 	}
-	// Crear el disco con los parámetros proporcionados
 	err = cmk(cmd)
 	if err != nil {
 		return "", fmt.Errorf("error al crear el disco: %v", err)
 	}
 
-	// Construye un mensaje detallado con las especificaciones del comando ejecutado
 	result := fmt.Sprintf("Comando mkdisk ejecutado con éxito.\nDetalles:\n- Tamaño: %d bytes\n- Ajuste: %s\n- Ruta: %s",
 		sizeBytes, cmd.fit, cmd.path)
 
-	return result, nil // Devuelve el mensaje detallado
+	return result, nil
 }
 
 func cmk(mkdisk *MKDISK) error {
@@ -97,15 +95,13 @@ func cmk(mkdisk *MKDISK) error {
 		return err
 	}
 
-	// Crear el disco con el tamaño proporcionado
 	err = createDisk(mkdisk, sizeBytes)
 	if err != nil {
 		fmt.Println("Error creating disk:", err)
 		return err
 	}
 
-	// Crear el MBR con el tamaño proporcionado
-	err = createMBR(mkdisk, sizeBytes)
+	err = crearMBR(mkdisk, sizeBytes)
 	if err != nil {
 		fmt.Println("Error creating MBR:", err)
 		return err
@@ -128,23 +124,21 @@ func createDisk(mkdisk *MKDISK, sizeBytes int) error {
 	}
 	defer file.Close()
 
-	// Escribir en el archivo usando un buffer de 1 MB
 	buffer := make([]byte, 1024*1024) // Crea un buffer de 1 MB
 	for sizeBytes > 0 {
 		writeSize := len(buffer)
 		if sizeBytes < writeSize {
-			writeSize = sizeBytes // Ajusta el tamaño de escritura si es menor que el buffer
+			writeSize = sizeBytes
 		}
 		if _, err := file.Write(buffer[:writeSize]); err != nil {
-			return err // Devuelve un error si la escritura falla
+			return err
 		}
-		sizeBytes -= writeSize // Resta el tamaño escrito del tamaño total
+		sizeBytes -= writeSize
 	}
 	return nil
 }
 
-func createMBR(mkdisk *MKDISK, sizeBytes int) error {
-	// Crear el MBR con los valores proporcionados
+func crearMBR(mkdisk *MKDISK, sizeBytes int) error {
 	mbr := &structures.MBR{
 		Mbr_size:           int32(sizeBytes),
 		Mbr_creation_date:  float32(time.Now().Unix()),
