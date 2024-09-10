@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/emilio-riv20/proyecto1/Analyzer"
+	"github.com/emilio-riv20/proyecto1/Codigo/Analyzer"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 )
