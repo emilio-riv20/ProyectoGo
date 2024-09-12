@@ -41,6 +41,14 @@ func Analyzer(input string) (interface{}, error) {
 				} else {
 					resultados = append(resultados, result)
 				}
+			case "fdisk":
+				result, err := Comands.Command_fdisk(tokens[1:])
+				if err != nil {
+					resultados = append(resultados, fmt.Sprintf("Error en el comando fdisk: %s", err))
+				} else {
+					resultados = append(resultados, result)
+				}
+
 			default:
 				resultados = append(resultados, fmt.Sprintf("Comando desconocido: %s", tokens[0]))
 			}
