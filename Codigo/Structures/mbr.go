@@ -5,7 +5,8 @@ import (
 	"encoding/binary" // Paquete para codificación y decodificación de datos binarios
 	"fmt"             // Paquete para formateo de E/S
 	"os"              // Paquete para funciones del sistema operativo
-	"time"            // Paquete para manipulación de tiempo
+	"strings"
+	"time" // Paquete para manipulación de tiempo
 )
 
 type MBR struct {
@@ -80,21 +81,70 @@ func (mbr *MBR) Print() {
 func (mbr *MBR) PrintPartitions() {
 	for i, partition := range mbr.Mbr_partitions {
 		// Convertir Part_status, Part_type y Part_fit a char
-		partStatus := rune(partition.Part_status[0])
-		partType := rune(partition.Part_type[0])
-		partFit := rune(partition.Part_fit[0])
+		partStatus := rune(partition.PartStatus[0])
+		partType := rune(partition.PartType[0])
+		partFit := rune(partition.PartFit[0])
 
 		// Convertir Part_name a string
-		partName := string(partition.Part_name[:])
+		partName := string(partition.PartName[:])
 
 		fmt.Printf("Partition %d:\n", i+1)
 		fmt.Printf("  Status: %c\n", partStatus)
 		fmt.Printf("  Type: %c\n", partType)
 		fmt.Printf("  Fit: %c\n", partFit)
-		fmt.Printf("  Start: %d\n", partition.Part_start)
-		fmt.Printf("  Size: %d\n", partition.Part_size)
+		fmt.Printf("  Start: %d\n", partition.PartStart)
+		fmt.Printf("  Size: %d\n", partition.PartSize)
 		fmt.Printf("  Name: %s\n", partName)
-		fmt.Printf("  Correlative: %d\n", partition.Part_correlative)
-		fmt.Printf("  ID: %d\n", partition.Part_id)
+		fmt.Printf("  Correlative: %d\n", partition.PartCorrelative)
+		fmt.Printf("  ID: %d\n", partition.PartId)
 	}
+}
+
+func (mbr *MBR) GetPartitionByName(name string) (*PARTITION, int) {
+	// Recorrer las particiones del MBR
+	for i, partition := range mbr.Mbr_partitions {
+		// Convertir Part_name a string y eliminar los caracteres nulos
+		partitionName := strings.Trim(string(partition.PartName[:]), "\x00 ")
+		// Convertir el nombre de la partición a string y eliminar los caracteres nulos
+		inputName := strings.Trim(name, "\x00 ")
+		// Si el nombre de la partición coincide, devolver la partición y el índice
+		if strings.EqualFold(partitionName, inputName) {
+			return &partition, i
+		}
+	}
+	return nil, -1
+}
+
+func (mbr *MBR) GetFirstAvailablePartition() (*PARTITION, int, int) {
+	// Calcular el offset para el start de la partición
+	offset := binary.Size(mbr) // Tamaño del MBR en bytes
+
+	// Recorrer las particiones del MBR
+	for i := 0; i < len(mbr.Mbr_partitions); i++ {
+		// Si el start de la partición es -1, entonces está disponible
+		if mbr.Mbr_partitions[i].PartStart == -1 {
+			// Devolver la partición, el offset y el índice
+			return &mbr.Mbr_partitions[i], offset, i
+		} else {
+			// Calcular el nuevo offset para la siguiente partición, es decir, sumar el tamaño de la partición
+			offset += int(mbr.Mbr_partitions[i].PartSize)
+		}
+	}
+	return nil, -1, -1
+}
+
+func (mbr *MBR) Serializar(path string) error {
+	file, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	// Serializar la estructura MBR directamente en el archivo
+	err = binary.Write(file, binary.LittleEndian, mbr)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

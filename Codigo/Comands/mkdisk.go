@@ -145,10 +145,10 @@ func crearMBR(mkdisk *MKDISK, sizeBytes int) error {
 		Mbr_disk_signature: rand.Int31(),
 		Mbr_disk_fit:       [1]byte{mkdisk.fit[0]},
 		Mbr_partitions: [4]structures.PARTITION{
-			{Part_status: [1]byte{'N'}, Part_type: [1]byte{'N'}, Part_fit: [1]byte{'N'}, Part_start: -1, Part_size: -1, Part_name: [16]byte{'P'}, Part_correlative: 1, Part_id: -1},
-			{Part_status: [1]byte{'N'}, Part_type: [1]byte{'N'}, Part_fit: [1]byte{'N'}, Part_start: -1, Part_size: -1, Part_name: [16]byte{'P'}, Part_correlative: 2, Part_id: -1},
-			{Part_status: [1]byte{'N'}, Part_type: [1]byte{'N'}, Part_fit: [1]byte{'N'}, Part_start: -1, Part_size: -1, Part_name: [16]byte{'P'}, Part_correlative: 3, Part_id: -1},
-			{Part_status: [1]byte{'N'}, Part_type: [1]byte{'N'}, Part_fit: [1]byte{'N'}, Part_start: -1, Part_size: -1, Part_name: [16]byte{'N'}, Part_correlative: 4, Part_id: -1},
+			{PartStatus: [1]byte{'N'}, PartType: [1]byte{'N'}, PartFit: [1]byte{'N'}, PartStart: -1, PartSize: -1, PartName: [16]byte{'P'}, PartCorrelative: 1, PartId: [4]byte{'0'}},
+			{PartStatus: [1]byte{'N'}, PartType: [1]byte{'N'}, PartFit: [1]byte{'N'}, PartStart: -1, PartSize: -1, PartName: [16]byte{'P'}, PartCorrelative: 2, PartId: [4]byte{'0'}},
+			{PartStatus: [1]byte{'N'}, PartType: [1]byte{'N'}, PartFit: [1]byte{'N'}, PartStart: -1, PartSize: -1, PartName: [16]byte{'P'}, PartCorrelative: 3, PartId: [4]byte{'0'}},
+			{PartStatus: [1]byte{'N'}, PartType: [1]byte{'N'}, PartFit: [1]byte{'N'}, PartStart: -1, PartSize: -1, PartName: [16]byte{'N'}, PartCorrelative: 4, PartId: [4]byte{'0'}},
 		},
 	}
 	err := mbr.SerializeMBR(mkdisk.path)
