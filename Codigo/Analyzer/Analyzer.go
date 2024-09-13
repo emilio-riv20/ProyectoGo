@@ -48,6 +48,13 @@ func Analyzer(input string) (interface{}, error) {
 				} else {
 					resultados = append(resultados, result)
 				}
+			case "mount":
+				result, err := Comands.Mount(tokens[1:])
+				if err != nil {
+					resultados = append(resultados, fmt.Sprintf("Error en el comando mount: %s", err))
+				} else {
+					resultados = append(resultados, result)
+				}
 
 			default:
 				resultados = append(resultados, fmt.Sprintf("Comando desconocido: %s", tokens[0]))
