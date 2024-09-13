@@ -6,7 +6,7 @@ import (
 	structures "github.com/emilio-riv20/proyecto1/Codigo/Structures"
 )
 
-const Carnet string = "202004712"
+const Carnet string = "12"
 
 var (
 	MountedPartitions map[string]string = make(map[string]string)

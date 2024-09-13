@@ -56,6 +56,14 @@ func Analyzer(input string) (interface{}, error) {
 					resultados = append(resultados, result)
 				}
 
+			case "login":
+				result, err := Comands.CLogin(tokens[1:])
+				if err != nil {
+					resultados = append(resultados, fmt.Sprintf("Error en el comando login: %s", err))
+				} else {
+					resultados = append(resultados, result)
+				}
+
 			default:
 				resultados = append(resultados, fmt.Sprintf("Comando desconocido: %s", tokens[0]))
 			}
