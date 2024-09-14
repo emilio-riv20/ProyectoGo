@@ -20,10 +20,10 @@ type FDISK struct {
 	name string
 }
 
-func Cfdisk(tokens []string) (string, error) {
+func Leerfdisk(tokens []string) (string, error) {
 	cmd := &FDISK{}
-	args := strings.Join(tokens, "")
-	re := regexp.MustCompile(`-size=\d+|-unit=[kKmM]|-path="[^"]+"|-path=[^\s]+|-fit=[bBfFwW]{2}|-type=[pPeE]|-name="[^"]+"|-name=[^\s]+`)
+	args := strings.Join(tokens, " ")
+	re := regexp.MustCompile(`(?i)-size=\d+|-unit=[kKmM]|-fit=[bBfF]{2}|-path="[^"]+"|-path=[^\s]+|-type=[pPeElL]|-name="[^"]+"|-name=[^\s]+`)
 	var result string
 
 	matches := re.FindAllString(args, -1)
@@ -95,34 +95,27 @@ func Cfdisk(tokens []string) (string, error) {
 	if cmd.name == "" {
 		return "", errors.New("faltan parámetros requeridos: -name")
 	}
-
-	// Si no se proporcionó la unidad, se establece por defecto a "M"
 	if cmd.unit == "" {
 		cmd.unit = "M"
 	}
-
-	// Si no se proporcionó el ajuste, se establece por defecto a "FF"
 	if cmd.fit == "" {
 		cmd.fit = "WF"
 	}
 
-	// Si no se proporcionó el tipo, se establece por defecto a "P"
 	if cmd.typ == "" {
 		cmd.typ = "P"
 	}
 
-	// Crear la partición con los parámetros proporcionados
-	err := fdis(cmd)
+	err := Cfdisk(cmd)
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
-	// Construye un mensaje detallado con las especificaciones del comando ejecutado
 	result = fmt.Sprintf("Comando fdisk ejecutado con éxito.- Tamaño: %d, Unidad: %s, Ajuste: %s, Ruta: %s, Tipo: %s, Nombre: %s", cmd.size, cmd.unit, cmd.fit, cmd.path, cmd.typ, cmd.name)
 
 	return result, nil
 }
 
-func fdis(fdisk *FDISK) error {
+func Cfdisk(fdisk *FDISK) error {
 	sizeBytes, err := utils.ConvertToBytes(fdisk.size, fdisk.unit)
 	if err != nil {
 		fmt.Println("Error converting size:", err)
@@ -130,16 +123,25 @@ func fdis(fdisk *FDISK) error {
 	}
 
 	if fdisk.typ == "P" {
-		// Crear partición primaria
 		err = crearParticionP(fdisk, sizeBytes)
 		if err != nil {
 			fmt.Println("Error creando partición primaria:", err)
 			return err
 		}
 	} else if fdisk.typ == "E" {
-		fmt.Println("Creando partición extendida...") // Les toca a ustedes implementar la partición extendida
+		err = crearParticionExtendida(fdisk, sizeBytes)
+		if err != nil {
+			fmt.Println("Error creando partición extendida:", err)
+			return err
+		}
 	} else if fdisk.typ == "L" {
-		fmt.Println("Creando partición lógica...") // Les toca a ustedes implementar la partición lógica
+		err = crearParticionL(fdisk, sizeBytes)
+		if err != nil {
+			fmt.Println("Error creando partición lógica:", err)
+			return err
+		}
+	} else {
+		return errors.New("tipo de partición no válido")
 	}
 
 	return nil
@@ -173,5 +175,78 @@ func crearParticionP(fdisk *FDISK, sizeBytes int) error {
 		fmt.Println("Error:", err)
 	}
 
+	return nil
+}
+
+func crearParticionExtendida(fdisk *FDISK, sizeBytes int) error {
+	var mbr structures.MBR
+	err := mbr.DeserializeMBR(fdisk.path)
+	if err != nil {
+		fmt.Println("Error deserializando MBR:", err)
+		return err
+	}
+
+	// Verifica si ya existe una partición extendida
+	if mbr.HasExtendedPartition() {
+		return errors.New("ya existe una partición extendida en el disco")
+	}
+
+	particionD, startP, indexP := mbr.GetFirstAvailablePartition()
+	if particionD == nil {
+		return errors.New("no hay particiones disponibles")
+	}
+
+	// Crear la partición extendida
+	particionD.CrearP(startP, sizeBytes, fdisk.typ, fdisk.fit, fdisk.name)
+
+	// Guardar la partición en el MBR
+	mbr.Mbr_partitions[indexP] = *particionD
+
+	// Serializar el MBR
+	err = mbr.Serializar(fdisk.path)
+	if err != nil {
+		fmt.Println("Error serializando MBR:", err)
+	}
+	return nil
+}
+
+// CrearParticionL crea una partición lógica en el disco
+func crearParticionL(fdisk *FDISK, sizeBytes int) error {
+	var mbr structures.MBR
+	err := mbr.DeserializeMBR(fdisk.path)
+	if err != nil {
+		fmt.Println("Error deserializando MBR:", err)
+		return err
+	}
+
+	// Buscar la partición extendida
+	extendida, err := mbr.ParticioPorId("E")
+	if err != nil {
+		fmt.Println("Error:", err)
+		return err
+	}
+
+	// Verificar si la partición extendida tiene espacio disponible
+	if int(extendida.PartSize) < sizeBytes {
+		return errors.New("no hay suficiente espacio en la partición extendida")
+	}
+
+	// Crear la partición lógica
+	particionD, startP, indexP := mbr.GetFirstAvailablePartition()
+	if particionD == nil {
+		return errors.New("no hay particiones disponibles")
+	}
+
+	// Crear la partición lógica
+	particionD.CrearP(startP, sizeBytes, fdisk.typ, fdisk.fit, fdisk.name)
+
+	// Guardar la partición en el MBR
+	mbr.Mbr_partitions[indexP] = *particionD
+
+	// Serializar el MBR
+	err = mbr.Serializar(fdisk.path)
+	if err != nil {
+		fmt.Println("Error serializando MBR:", err)
+	}
 	return nil
 }

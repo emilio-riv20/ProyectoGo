@@ -163,3 +163,13 @@ func (mbr *MBR) ParticioPorId(id string) (*PARTITION, error) {
 	}
 	return nil, errors.New("partición no encontrada")
 }
+
+// Funcion que verifica la existencia de una particion extendida
+func (mbr *MBR) HasExtendedPartition() bool {
+	for _, partition := range mbr.Mbr_partitions {
+		if partition.PartType[0] == 'E' {
+			return true
+		}
+	}
+	return false
+}

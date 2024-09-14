@@ -11,6 +11,7 @@ func Clogout() (string, error) {
 		fmt.Println("Usuario deslogueado")
 	} else {
 		fmt.Println("No hay usuario logueado")
+		return "No hay usuario logueado", nil
 	}
 
 	logueado = Login{}

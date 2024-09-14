@@ -42,7 +42,7 @@ func Analyzer(input string) (interface{}, error) {
 					resultados = append(resultados, result)
 				}
 			case "fdisk":
-				result, err := Comands.Cfdisk(tokens[1:])
+				result, err := Comands.Leerfdisk(tokens[1:])
 				if err != nil {
 					resultados = append(resultados, fmt.Sprintf("Error en el comando fdisk: %s", err))
 				} else {

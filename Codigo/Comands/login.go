@@ -23,9 +23,7 @@ func ValidarDatos(contexto []string) bool {
 	contra := ""
 
 	for _, token := range contexto {
-		if strings.HasPrefix(token, "-") {
-			token = strings.TrimPrefix(token, "-")
-		}
+		token = strings.TrimPrefix(token, "-")
 
 		tk := strings.Split(token, "=")
 		if len(tk) == 2 {
@@ -83,9 +81,7 @@ func CLogin(tokens []string) (string, error) {
 
 	// Procesa los tokens para extraer los valores de login
 	for _, token := range tokens {
-		if strings.HasPrefix(token, "-") {
-			token = strings.TrimPrefix(token, "-")
-		}
+		token = strings.TrimPrefix(token, "-")
 
 		tk := strings.Split(token, "=")
 		if len(tk) == 2 {
