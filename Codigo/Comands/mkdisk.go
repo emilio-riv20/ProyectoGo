@@ -22,7 +22,7 @@ type MKDISK struct {
 	path string
 }
 
-func Command_mkdisk(tokens []string) (string, error) {
+func Cmkdisk(tokens []string) (string, error) {
 	cmd := &MKDISK{}
 
 	args := strings.Join(tokens, " ")

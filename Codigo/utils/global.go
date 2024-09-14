@@ -61,7 +61,7 @@ func GetParticionMontada(id string) (*structures.MBR, *structures.SuperBloque, s
 	var sb structures.SuperBloque
 
 	// Deserializar la estructura SuperBlock desde un archivo binario
-	err = sb.Deserializar(path, int64(partition.PartStart))
+	err = sb.Serialize(path, int64(partition.PartStart))
 	if err != nil {
 		return nil, nil, "", err
 	}

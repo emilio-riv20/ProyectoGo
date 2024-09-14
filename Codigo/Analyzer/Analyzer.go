@@ -28,7 +28,7 @@ func Analyzer(input string) (interface{}, error) {
 
 			switch tokens[0] {
 			case "mkdisk":
-				result, err := Comands.Command_mkdisk(tokens[1:])
+				result, err := Comands.Cmkdisk(tokens[1:])
 				if err != nil {
 					resultados = append(resultados, fmt.Sprintf("Error en el comando mkdisk: %s", err))
 				} else {
@@ -42,7 +42,7 @@ func Analyzer(input string) (interface{}, error) {
 					resultados = append(resultados, result)
 				}
 			case "fdisk":
-				result, err := Comands.Command_fdisk(tokens[1:])
+				result, err := Comands.Cfdisk(tokens[1:])
 				if err != nil {
 					resultados = append(resultados, fmt.Sprintf("Error en el comando fdisk: %s", err))
 				} else {
@@ -63,6 +63,16 @@ func Analyzer(input string) (interface{}, error) {
 				} else {
 					resultados = append(resultados, result)
 				}
+
+			case "logout":
+				result, err := Comands.Clogout()
+				if err != nil {
+					resultados = append(resultados, fmt.Sprintf("Error en el comando logout: %s", err))
+				} else {
+					resultados = append(resultados, result)
+				}
+
+			case "mkfs":
 
 			default:
 				resultados = append(resultados, fmt.Sprintf("Comando desconocido: %s", tokens[0]))

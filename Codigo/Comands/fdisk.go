@@ -20,7 +20,7 @@ type FDISK struct {
 	name string
 }
 
-func Command_fdisk(tokens []string) (string, error) {
+func Cfdisk(tokens []string) (string, error) {
 	cmd := &FDISK{}
 	args := strings.Join(tokens, "")
 	re := regexp.MustCompile(`-size=\d+|-unit=[kKmM]|-path="[^"]+"|-path=[^\s]+|-fit=[bBfFwW]{2}|-type=[pPeE]|-name="[^"]+"|-name=[^\s]+`)
