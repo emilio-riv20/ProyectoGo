@@ -1,6 +1,7 @@
 package comands
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
 	"os"
@@ -42,16 +43,60 @@ func ValidarDatos(contexto []string) bool {
 }
 
 func LeerArchivos(partitionID string) (string, error) {
-	partitionPath := "/path/to/mounted/partition"
+	partitionPath := fmt.Sprintf("/mnt/%s/users.txt", partitionID)
 
+	// Verifica si el archivo existe
+	if _, err := os.Stat(partitionPath); os.IsNotExist(err) {
+		// Si no existe, crea el archivo con el grupo y usuario root
+		fmt.Println("Archivo users.txt no encontrado. Generando archivo con usuario root...")
+
+		err := crearArchivo(partitionPath)
+		if err != nil {
+			return "", fmt.Errorf("error al crear el archivo users.txt: %v", err)
+		}
+	}
+
+	// Abre el archivo para leerlo
 	file, err := os.Open(partitionPath)
 	if err != nil {
-		return "", fmt.Errorf("error al abrir la partición: %v", err)
+		return "", fmt.Errorf("error al abrir el archivo users.txt: %v", err)
 	}
 	defer file.Close()
-	ArchivosUser := "root,123\nadmin,admin123\n"
 
-	return ArchivosUser, nil
+	// Lee el contenido del archivo
+	var contenido strings.Builder
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		contenido.WriteString(scanner.Text() + "\n")
+	}
+
+	if err := scanner.Err(); err != nil {
+		return "", fmt.Errorf("error al leer el archivo users.txt: %v", err)
+	}
+
+	return contenido.String(), nil
+}
+
+func crearArchivo(partitionPath string) error {
+	file, err := os.Create(partitionPath)
+	if err != nil {
+		return fmt.Errorf("error al crear users.txt: %v", err)
+	}
+	defer file.Close()
+	writer := bufio.NewWriter(file)
+	_, err = writer.WriteString("1, G, root\n1, U, root, root, 123\n")
+	if err != nil {
+		return fmt.Errorf("error al escribir en users.txt: %v", err)
+	}
+
+	// Asegura que los datos se guarden en el archivo
+	err = writer.Flush()
+	if err != nil {
+		return fmt.Errorf("error al guardar en users.txt: %v", err)
+	}
+
+	fmt.Println("Archivo users.txt creado exitosamente con el usuario root.")
+	return nil
 }
 
 func ValidarUsuario(usersData string, user string, pass string) bool {

@@ -49,7 +49,7 @@ func Analyzer(input string) (interface{}, error) {
 					resultados = append(resultados, result)
 				}
 			case "mount":
-				result, err := Comands.Mount(tokens[1:])
+				result, err := Comands.LeerMount(tokens[1:])
 				if err != nil {
 					resultados = append(resultados, fmt.Sprintf("Error en el comando mount: %s", err))
 				} else {

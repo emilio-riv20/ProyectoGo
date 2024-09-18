@@ -3,16 +3,15 @@ package structures
 import (
 	"bytes"           // Paquete para manipulación de buffers
 	"encoding/binary" // Paquete para codificación y decodificación de datos binarios
-	"errors"
-	"fmt" // Paquete para formateo de E/S
-	"os"  // Paquete para funciones del sistema operativo
+	"fmt"             // Paquete para formateo de E/S
+	"os"              // Paquete para funciones del sistema operativo
 	"strings"
 	"time"
 )
 
 type MBR struct {
 	Mbr_size           int32        // Tamaño del MBR en bytes
-	Mbr_creation_date  float32      // Fecha y hora de creación del MBR
+	Mbr_creation_date  int64        // Fecha y hora de creación del MBR
 	Mbr_disk_signature int32        // Firma del disco
 	Mbr_disk_fit       [1]byte      // Tipo de ajuste
 	Mbr_partitions     [4]PARTITION // Particiones del MBR
@@ -116,6 +115,18 @@ func (mbr *MBR) ParticionPorNombre(name string) (*PARTITION, int) {
 	return nil, -1
 }
 
+func (mbr *MBR) ParticionPorId(id string) (*PARTITION, int) {
+	for i, partition := range mbr.Mbr_partitions {
+
+		partitionID := strings.Trim(string(partition.PartId[:]), "\x00 ")
+		inputID := strings.Trim(id, "\x00 ")
+		if strings.EqualFold(partitionID, inputID) {
+			return &partition, i
+		}
+	}
+	return nil, -1
+}
+
 func (mbr *MBR) GetFirstAvailablePartition() (*PARTITION, int, int) {
 	// Calcular el offset para el start de la partición
 	offset := binary.Size(mbr) // Tamaño del MBR en bytes
@@ -132,36 +143,6 @@ func (mbr *MBR) GetFirstAvailablePartition() (*PARTITION, int, int) {
 		}
 	}
 	return nil, -1, -1
-}
-
-func (mbr *MBR) Serializar(path string) error {
-	file, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE, 0644)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	// Serializar la estructura MBR directamente en el archivo
-	err = binary.Write(file, binary.LittleEndian, mbr)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (mbr *MBR) ParticioPorId(id string) (*PARTITION, error) {
-	for i := 0; i < len(mbr.Mbr_partitions); i++ {
-		// Convertir Part_name a string y eliminar los caracteres nulos
-		partitionID := strings.Trim(string(mbr.Mbr_partitions[i].PartId[:]), "\x00 ")
-		// Convertir el id a string y eliminar los caracteres nulos
-		inputID := strings.Trim(id, "\x00 ")
-		// Si el nombre de la partición coincide, devolver la partición
-		if strings.EqualFold(partitionID, inputID) {
-			return &mbr.Mbr_partitions[i], nil
-		}
-	}
-	return nil, errors.New("partición no encontrada")
 }
 
 // Funcion que verifica la existencia de una particion extendida

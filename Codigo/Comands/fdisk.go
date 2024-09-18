@@ -170,7 +170,7 @@ func crearParticionP(fdisk *FDISK, sizeBytes int) error {
 	}
 
 	// Serializar el MBR en el archivo binario
-	err = mbr.Serializar(fdisk.path)
+	err = mbr.SerializeMBR(fdisk.path)
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
@@ -203,7 +203,7 @@ func crearParticionExtendida(fdisk *FDISK, sizeBytes int) error {
 	mbr.Mbr_partitions[indexP] = *particionD
 
 	// Serializar el MBR
-	err = mbr.Serializar(fdisk.path)
+	err = mbr.SerializeMBR(fdisk.path)
 	if err != nil {
 		fmt.Println("Error serializando MBR:", err)
 	}
@@ -220,7 +220,7 @@ func crearParticionL(fdisk *FDISK, sizeBytes int) error {
 	}
 
 	// Buscar la partición extendida
-	extendida, err := mbr.ParticioPorId("E")
+	extendida, _ := mbr.ParticionPorNombre("E")
 	if err != nil {
 		fmt.Println("Error:", err)
 		return err
@@ -244,9 +244,20 @@ func crearParticionL(fdisk *FDISK, sizeBytes int) error {
 	mbr.Mbr_partitions[indexP] = *particionD
 
 	// Serializar el MBR
-	err = mbr.Serializar(fdisk.path)
+	err = mbr.SerializeMBR(fdisk.path)
 	if err != nil {
 		fmt.Println("Error serializando MBR:", err)
 	}
 	return nil
+}
+
+func PrintPartitions(mbr *structures.MBR) {
+	for i, partition := range mbr.Mbr_partitions {
+		fmt.Printf("Partición %d:\n", i+1)
+		fmt.Printf("  Nombre: %s\n", strings.Trim(string(partition.PartName[:]), "\x00 "))
+		fmt.Printf("  Tipo: %s\n", strings.Trim(string(partition.PartType[:]), "\x00 "))
+		fmt.Printf("  Ajuste: %s\n", strings.Trim(string(partition.PartFit[:]), "\x00 "))
+		fmt.Printf("  Inicio: %d\n", partition.PartStart)
+		fmt.Printf("  Tamaño: %d\n", partition.PartSize)
+	}
 }

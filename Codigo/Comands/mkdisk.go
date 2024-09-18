@@ -141,7 +141,7 @@ func createDisk(mkdisk *MKDISK, sizeBytes int) error {
 func crearMBR(mkdisk *MKDISK, sizeBytes int) error {
 	mbr := &structures.MBR{
 		Mbr_size:           int32(sizeBytes),
-		Mbr_creation_date:  float32(time.Now().Unix()),
+		Mbr_creation_date:  int64(time.Now().Unix()),
 		Mbr_disk_signature: rand.Int31(),
 		Mbr_disk_fit:       [1]byte{mkdisk.fit[0]},
 		Mbr_partitions: [4]structures.PARTITION{

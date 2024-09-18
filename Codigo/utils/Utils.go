@@ -49,3 +49,10 @@ func Letra(path string) (string, error) {
 	}
 	return path_Letra[path], nil
 }
+
+func GetLetter(path string) (string, error) {
+	if letra, existe := path_Letra[path]; existe {
+		return letra, nil
+	}
+	return Letra(path)
+}

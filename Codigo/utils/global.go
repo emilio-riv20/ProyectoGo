@@ -28,9 +28,9 @@ func ParticionMontada(id string) (*structures.PARTITION, string, error) {
 	}
 
 	// Buscar la partición con el id especificado
-	partition, err := mbr.ParticioPorId(id)
+	partition, _ := mbr.ParticionPorId(id) // Ignoramos el índice aquí si no lo necesitas
 	if partition == nil {
-		return nil, "", err
+		return nil, "", errors.New("partición no encontrada")
 	}
 
 	return partition, path, nil
@@ -52,16 +52,16 @@ func GetParticionMontada(id string) (*structures.MBR, *structures.SuperBloque, s
 	}
 
 	// Buscar la partición con el id especificado
-	partition, err := mbr.ParticioPorId(id)
+	partition, partitionIndex := mbr.ParticionPorId(id)
 	if partition == nil {
-		return nil, nil, "", err
+		return nil, nil, "", errors.New("partición no encontrada")
 	}
 
 	// Crear una instancia de SuperBlock
 	var sb structures.SuperBloque
 
 	// Deserializar la estructura SuperBlock desde un archivo binario
-	err = sb.Serialize(path, int64(partition.PartStart))
+	err = sb.Deserialize(path, int64(mbr.Mbr_partitions[partitionIndex].PartStart))
 	if err != nil {
 		return nil, nil, "", err
 	}
