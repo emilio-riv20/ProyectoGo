@@ -92,12 +92,10 @@ func (sb *SuperBloque) CreateUserFile(path string) error {
 
 	sb.updateBlockStats()
 
-	// Step 3: Update root inode with "users.txt"
 	if err := sb.updateRootInodeWithUserFile(path); err != nil {
 		return err
 	}
 
-	// Step 4: Create inode for "users.txt"
 	usersText := "1,G,root\n1,U,root,123\n"
 	usersInode := sb.createInode(1, 1, int32(len(usersText)), '1')
 	if err := usersInode.Serializar(path, int64(sb.FirstInode)); err != nil {

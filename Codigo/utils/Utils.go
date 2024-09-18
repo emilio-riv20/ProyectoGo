@@ -21,11 +21,11 @@ func Float64ToBytes(f float64) [4]byte {
 func ConvertToBytes(size int, unit string) (int, error) {
 	switch unit {
 	case "K":
-		return size * 1024, nil // Convierte kilobytes a bytes
+		return size * 1024, nil
 	case "M":
-		return size * 1024 * 1024, nil // Convierte megabytes a bytes
+		return size * 1024 * 1024, nil
 	default:
-		return 0, errors.New("invalid unit") // Devuelve un error si la unidad es inválida
+		return 0, errors.New("invalid unit")
 	}
 }
 

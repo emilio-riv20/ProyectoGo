@@ -12,8 +12,8 @@ import (
 
 // MOUNT estructura que representa el comando mount con sus parámetros
 type MOUNT struct {
-	path string // Ruta del archivo del disco
-	name string // Nombre de la partición
+	path string
+	name string
 }
 
 // CommandMount parsea el comando mount y devuelve una instancia de MOUNT
@@ -41,7 +41,6 @@ func LeerMount(tokens []string) (string, error) {
 			value = strings.Trim(value, "\"")
 		}
 
-		// Switch para manejar diferentes parámetros
 		switch key {
 		case "-path":
 			if value == "" {
@@ -58,7 +57,6 @@ func LeerMount(tokens []string) (string, error) {
 		}
 	}
 
-	// Verifica que los parámetros -path y -name hayan sido proporcionados
 	if cmd.path == "" {
 		return "", errors.New("faltan parámetros requeridos: -path")
 	}
